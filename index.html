@@ -1,0 +1,124 @@
+<!-- ... existing code ... -->
+                    <p id="nlp-feedback" class="hidden text-xs text-blue-900 bg-blue-100/90 px-3 py-2.5 rounded-lg border border-blue-200 leading-relaxed">
+                        <!-- Dynamisches KI-Analyse-Feedback -->
+                    </p>
+
+                    <!-- Optionaler API-Key für GitHub Pages Hosting (wird nur lokal im Browser gespeichert) -->
+                    <details class="pt-1 text-xs text-slate-600">
+                        <summary class="cursor-pointer font-medium text-blue-700 hover:underline select-none">
+                            Optional: Eigenen Gemini API-Key für GitHub Pages hinterlegen
+                        </summary>
+                        <div class="mt-2 p-3 bg-white rounded-xl border border-blue-200 space-y-2">
+                            <p class="text-[11px] text-slate-500 leading-relaxed">
+                    <button onclick="switchTab('beispielliste')" id="tab-btn-beispielliste" class="px-4 py-2 rounded-lg text-sm font-medium transition-all text-blue-100 hover:bg-blue-800">
+                        Beispielliste (PDF)
+                    </button>
+                    <button onclick="downloadHtmlFile()" title="Komplette index.html für GitHub herunterladen" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-emerald-500 hover:bg-emerald-600 text-white shadow flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span>index.html laden</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+                        </div>
+                    </details>
+                </div>
+
+                <!-- Trenner für manuelle Feinjustierung -->
+<!-- ... existing code ... -->
+            state.matchedExamples = [];
+            state.aiResult = null;
+        }
+
+        // API-Key Verwaltung für eigenständiges Hosting (z. B. GitHub Pages)
+        function getActiveApiKey() {
+            const inputEl = document.getElementById('custom-api-key');
+            const stored = localStorage.getItem('gemini_messeg_api_key') || '';
+            return (inputEl && inputEl.value.trim()) ? inputEl.value.trim() : stored;
+        }
+
+        function saveApiKey(val) {
+            localStorage.setItem('gemini_messeg_api_key', val.trim());
+        }
+
+        function clearApiKey() {
+            localStorage.removeItem('gemini_messeg_api_key');
+            const inputEl = document.getElementById('custom-api-key');
+            if (inputEl) inputEl.value = '';
+            showToast('Gespeicherter API-Key wurde entfernt.');
+        }
+
+        // Lädt die komplette Web-App als eigenständige index.html Datei herunter (ideal für GitHub Pages)
+        function downloadHtmlFile() {
+            const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'index.html';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('index.html wurde heruntergeladen!');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            if (toastMsg) toastMsg.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function fillDemoCase(text) {
+<!-- ... existing code ... -->
+            // Zuerst lokale Vor-Analyse ausführen, damit UI sofort reagiert
+            analyzeFreeTextLocal();
+
+            const activeKey = getActiveApiKey();
+
+            const knowledgeBase = pdfExamples.map(e =>
+                `Beispiel ${e.id} [Kategorie ${e.cat}]: ${e.title} | Sachverhalt: ${e.desc} | Prüfung: ${e.tb} | Ergebnis: ${e.result}`
+            ).join('\n');
+// ... existing code ... -->
+Antworte ausschließlich im vorgegebenen JSON-Format auf Deutsch.`;
+
+            const apiKey = activeKey;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+<!-- ... existing code ... -->
+            } catch (error) {
+                console.error("KI-Analyse Fehler:", error);
+                badge.textContent = 'Lokale Regelprüfung aktiv';
+                const keyHint = !activeKey
+                    ? ' (Hinweis: Auf GitHub Pages kann oben optional ein eigener Gemini API-Key hinterlegt werden – die integrierte Regel-Datenbasis funktioniert jedoch auch komplett ohne Key!)'
+                    : '';
+                feedback.innerHTML = `<strong>Auswertung über integrierte Datenbasis:</strong> Ihr Sachverhalt wurde anhand der § 1 Abs. 1 MessEV- und AGME-Regeln geprüft.${keyHint}`;
+                evaluateCase(false);
+            } finally {
+                btn.disabled = false;
+<!-- ... existing code ... -->
+            try {
+                document.execCommand('copy');
+                showToast('Prüfvermerk in die Zwischenablage kopiert!');
+            } catch (err) {
+                console.error('Kopieren fehlgeschlagen', err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Initialisierung beim Laden
+        window.onload = function() {
+            const savedKey = localStorage.getItem('gemini_messeg_api_key');
+            const keyInput = document.getElementById('custom-api-key');
+            if (savedKey && keyInput) {
+                keyInput.value = savedKey;
+            }
+
+            const descInput = document.getElementById('case-description');
+            if (descInput) {
+<!-- ... existing code ... -->
